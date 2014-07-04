@@ -9,10 +9,14 @@
 /* Begin PBXBuildFile section */
 		AD7E24651963A14A00A92F75 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD7E24641963A14A00A92F75 /* AppDelegate.swift */; };
 		AD7E24681963A14A00A92F75 /* iOSSwiftOpenGLCamera.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = AD7E24661963A14A00A92F75 /* iOSSwiftOpenGLCamera.xcdatamodeld */; };
-		AD7E246A1963A14A00A92F75 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD7E24691963A14A00A92F75 /* ViewController.swift */; };
 		AD7E246D1963A14A00A92F75 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AD7E246B1963A14A00A92F75 /* Main.storyboard */; };
 		AD7E246F1963A14A00A92F75 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AD7E246E1963A14A00A92F75 /* Images.xcassets */; };
 		AD7E247B1963A14A00A92F75 /* iOSSwiftOpenGLCameraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD7E247A1963A14A00A92F75 /* iOSSwiftOpenGLCameraTests.swift */; };
+		AD7E24851963A16A00A92F75 /* OpenGLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD7E24841963A16A00A92F75 /* OpenGLView.swift */; };
+		AD7E24871963A1A600A92F75 /* SimpleVertex.glsl in Resources */ = {isa = PBXBuildFile; fileRef = AD7E24861963A1A600A92F75 /* SimpleVertex.glsl */; };
+		AD7E24891963A1B400A92F75 /* SimpleFragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = AD7E24881963A1B400A92F75 /* SimpleFragment.glsl */; };
+		AD7E24EB1963BE4300A92F75 /* CameraSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD7E24EA1963BE4300A92F75 /* CameraSessionController.swift */; };
+		AD7E24ED1966373300A92F75 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD7E24EC1966373300A92F75 /* CameraViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -30,12 +34,16 @@
 		AD7E24631963A14A00A92F75 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AD7E24641963A14A00A92F75 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AD7E24671963A14A00A92F75 /* iOSSwiftOpenGLCamera.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = iOSSwiftOpenGLCamera.xcdatamodel; sourceTree = "<group>"; };
-		AD7E24691963A14A00A92F75 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		AD7E246C1963A14A00A92F75 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AD7E246E1963A14A00A92F75 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		AD7E24741963A14A00A92F75 /* iOSSwiftOpenGLCameraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOSSwiftOpenGLCameraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD7E24791963A14A00A92F75 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AD7E247A1963A14A00A92F75 /* iOSSwiftOpenGLCameraTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSSwiftOpenGLCameraTests.swift; sourceTree = "<group>"; };
+		AD7E24841963A16A00A92F75 /* OpenGLView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenGLView.swift; sourceTree = "<group>"; };
+		AD7E24861963A1A600A92F75 /* SimpleVertex.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SimpleVertex.glsl; sourceTree = "<group>"; };
+		AD7E24881963A1B400A92F75 /* SimpleFragment.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SimpleFragment.glsl; sourceTree = "<group>"; };
+		AD7E24EA1963BE4300A92F75 /* CameraSessionController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraSessionController.swift; sourceTree = "<group>"; };
+		AD7E24EC1966373300A92F75 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,10 +86,9 @@
 			isa = PBXGroup;
 			children = (
 				AD7E24641963A14A00A92F75 /* AppDelegate.swift */,
-				AD7E24691963A14A00A92F75 /* ViewController.swift */,
-				AD7E246B1963A14A00A92F75 /* Main.storyboard */,
-				AD7E246E1963A14A00A92F75 /* Images.xcassets */,
-				AD7E24661963A14A00A92F75 /* iOSSwiftOpenGLCamera.xcdatamodeld */,
+				AD7E24EA1963BE4300A92F75 /* CameraSessionController.swift */,
+				AD7E24EC1966373300A92F75 /* CameraViewController.swift */,
+				AD7E24841963A16A00A92F75 /* OpenGLView.swift */,
 				AD7E24621963A14A00A92F75 /* Supporting Files */,
 			);
 			path = iOSSwiftOpenGLCamera;
@@ -90,6 +97,11 @@
 		AD7E24621963A14A00A92F75 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				AD7E246B1963A14A00A92F75 /* Main.storyboard */,
+				AD7E24861963A1A600A92F75 /* SimpleVertex.glsl */,
+				AD7E24881963A1B400A92F75 /* SimpleFragment.glsl */,
+				AD7E246E1963A14A00A92F75 /* Images.xcassets */,
+				AD7E24661963A14A00A92F75 /* iOSSwiftOpenGLCamera.xcdatamodeld */,
 				AD7E24631963A14A00A92F75 /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -193,7 +205,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				AD7E246D1963A14A00A92F75 /* Main.storyboard in Resources */,
+				AD7E24891963A1B400A92F75 /* SimpleFragment.glsl in Resources */,
 				AD7E246F1963A14A00A92F75 /* Images.xcassets in Resources */,
+				AD7E24871963A1A600A92F75 /* SimpleVertex.glsl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -211,9 +225,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AD7E246A1963A14A00A92F75 /* ViewController.swift in Sources */,
 				AD7E24651963A14A00A92F75 /* AppDelegate.swift in Sources */,
 				AD7E24681963A14A00A92F75 /* iOSSwiftOpenGLCamera.xcdatamodeld in Sources */,
+				AD7E24EB1963BE4300A92F75 /* CameraSessionController.swift in Sources */,
+				AD7E24851963A16A00A92F75 /* OpenGLView.swift in Sources */,
+				AD7E24ED1966373300A92F75 /* CameraViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -401,6 +417,7 @@
 				AD7E24801963A14A00A92F75 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		AD7E24811963A14A00A92F75 /* Build configuration list for PBXNativeTarget "iOSSwiftOpenGLCameraTests" */ = {
 			isa = XCConfigurationList;
@@ -409,6 +426,7 @@
 				AD7E24831963A14A00A92F75 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

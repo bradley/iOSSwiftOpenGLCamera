@@ -11,18 +11,21 @@ import UIKit
 import QuartzCore
 import OpenGLES
 import GLKit
+import CoreMedia
+import AVFoundation
 
 
 struct Vertex {
 	var Position: (CFloat, CFloat, CFloat)
 	var Color: (CFloat, CFloat, CFloat, CFloat)
+	var TexCoord: (CFloat, CFloat)
 }
 
 var Vertices: (Vertex, Vertex, Vertex, Vertex) = (
-	Vertex(Position: (1, -1, 0) , Color: (1, 0, 0, 1)),
-	Vertex(Position: (1, 1, 0)  , Color: (0, 1, 0, 1)),
-	Vertex(Position: (-1, 1, 0) , Color: (0, 0, 1, 1)),
-	Vertex(Position: (-1, -1, 0), Color: (0, 0, 0, 1))
+	Vertex(Position: (1, -1, 0) , Color: (1, 0, 0, 1), TexCoord: (1, 0)),
+	Vertex(Position: (1, 1, 0)  , Color: (0, 1, 0, 1), TexCoord: (1, 1)),
+	Vertex(Position: (-1, 1, 0) , Color: (0, 0, 1, 1), TexCoord: (0, 1)),
+	Vertex(Position: (-1, -1, 0), Color: (0, 0, 0, 1), TexCoord: (0, 0))
 )
 
 var Indices: (GLubyte, GLubyte, GLubyte, GLubyte, GLubyte, GLubyte) = (
@@ -38,9 +41,14 @@ class OpenGLView: UIView {
 	var colorRenderBuffer: GLuint = GLuint()
 	var positionSlot: GLuint = GLuint()
 	var colorSlot: GLuint = GLuint()
+	var texCoordSlot: GLuint = GLuint()
+	var textureUniform: GLuint = GLuint()
 	var indexBuffer: GLuint = GLuint()
 	var vertexBuffer: GLuint = GLuint()
+	var suppliedTexture: GLuint?
 	
+	var unmanagedCoreVideoTextureCache: Unmanaged<CVOpenGLESTextureCache>?
+	var coreVideoTextureCache: CVOpenGLESTextureCacheRef?
 	
 	/* Class Methods
 	------------------------------------------*/
@@ -64,7 +72,8 @@ class OpenGLView: UIView {
 		setupFrameBuffer()
 		compileShaders()
 		setupVBOs()
-		render()
+		setupDisplayLink()
+		suppliedTexture = getTextureFromImageWithName("tile_floor.png")
 	}
 	
 	
@@ -83,7 +92,7 @@ class OpenGLView: UIView {
 		//   Here we create a new context with the version of the rendering API we want and
 		//   tells OpenGL that when we draw, we want to do so within this context.
 		var api: EAGLRenderingAPI = EAGLRenderingAPI.OpenGLES2
-		self.context = EAGLContext(API: api)
+		context = EAGLContext(API: api)
 		
 		if (!self.context) {
 			println("Failed to initialize OpenGLES 2.0 context!")
@@ -94,8 +103,11 @@ class OpenGLView: UIView {
 			println("Failed to set current OpenGL context!")
 			exit(1)
 		}
+
+		var err: CVReturn = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, nil, context, nil, &unmanagedCoreVideoTextureCache)
+		coreVideoTextureCache = unmanagedCoreVideoTextureCache!.takeUnretainedValue()
 	}
-	
+
 	func setupRenderBuffer() {
 		// A render buffer is an OpenGL objec that stores the rendered image to present to the screen.
 		//   OpenGL will create a unique identifier for a render buffer and store it in a GLuint.
@@ -182,6 +194,10 @@ class OpenGLView: UIView {
 		colorSlot = glGetAttribLocation(programHandle, "SourceColor").asUnsigned()
 		glEnableVertexAttribArray(positionSlot)
 		glEnableVertexAttribArray(colorSlot)
+		
+		texCoordSlot = glGetAttribLocation(programHandle, "TexCoordIn").asUnsigned()
+		glEnableVertexAttribArray(texCoordSlot);
+		textureUniform = glGetUniformLocation(programHandle, "Texture").asUnsigned()
 	}
 	
 	// Setup Vertex Buffer Objects
@@ -195,7 +211,12 @@ class OpenGLView: UIView {
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER.asUnsigned(), Int(sizeofValue(Indices)), &Indices, GL_STATIC_DRAW.asUnsigned())
 	}
 	
-	func render() {
+	func setupDisplayLink() {
+		var displayLink: CADisplayLink = CADisplayLink(target: self, selector: "render:")
+		displayLink.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
+	}
+	
+	func render(displayLink: CADisplayLink) {
 		
 		// Call glViewport to set the portion of the UIView to use for rendering. This sets it to the entire window, but if you wanted a smallar part you could change these values.
 		glViewport(0, 0, GLint(frame.size.width), GLint(frame.size.height));
@@ -216,6 +237,16 @@ class OpenGLView: UIView {
 		let colorSlotFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(sizeof(Float) * 3))
 		glVertexAttribPointer(colorSlot, 4 as GLint, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), colorSlotFirstComponent)
 		
+		let texCoordFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(sizeof(Float) * 7))
+		glVertexAttribPointer(texCoordSlot, 2, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), texCoordFirstComponent);
+		glActiveTexture(UInt32(GL_TEXTURE0));
+		if suppliedTexture {
+			
+			glBindTexture(GL_TEXTURE_2D.asUnsigned(), suppliedTexture!);
+			glUniform1i(textureUniform.asSigned(), 0);
+		}
+		
+		
 		// Calls glDrawElements to make the magic happen! This actually ends up calling your vertex shader for every vertex you pass in, and then the fragment shader on each pixel to display on the screen.
 		//	  Note that the second parameter to glDrawElements is the number of vertices to render. We use a C trick
 		//   here in order to determine this by dividing the size of Indices in bytes by the size of its first element in bytes.
@@ -223,5 +254,106 @@ class OpenGLView: UIView {
 		glDrawElements(GL_TRIANGLES.asUnsigned(), Int32(GLfloat(sizeofValue(Indices)) / GLfloat(sizeofValue(Indices.0))), GL_UNSIGNED_BYTE.asUnsigned(), vertextBufferOffset)
 		
 		context.presentRenderbuffer(Int(GL_RENDERBUFFER))
+	}
+	
+	func getTextureFromSampleBuffer(sampleBuffer: CMSampleBuffer!) -> GLuint {
+		var texture: GLuint = GLuint()
+		
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D.asUnsigned(), texture);
+		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_MIN_FILTER.asUnsigned(), GL_LINEAR)
+		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_MAG_FILTER.asUnsigned(), GL_LINEAR)
+		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_WRAP_S.asUnsigned(), GL_CLAMP_TO_EDGE)
+		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_WRAP_T.asUnsigned(), GL_CLAMP_TO_EDGE)
+		
+		
+		var unmanagedImageBuffer: Unmanaged<CVImageBuffer> = CMSampleBufferGetImageBuffer(sampleBuffer)
+		var imageBuffer = unmanagedImageBuffer.takeUnretainedValue()
+		var opaqueImageBuffer = unmanagedImageBuffer.toOpaque()
+		
+		var pixelBuffer: CVPixelBuffer = Unmanaged<CVPixelBuffer>.fromOpaque(opaqueImageBuffer).takeUnretainedValue()
+		CVPixelBufferLockBaseAddress(pixelBuffer, 0)
+		var width: UInt = CVPixelBufferGetWidth(pixelBuffer)
+		var height: UInt = CVPixelBufferGetHeight(pixelBuffer)
+		
+		
+		glTexImage2D(GL_TEXTURE_2D.asUnsigned(), 0, GL_RGBA, GLsizei(width), GLsizei(height), 0, GL_RGBA.asUnsigned(), UInt32(GL_UNSIGNED_BYTE), CVPixelBufferGetBaseAddress(pixelBuffer))
+		CVPixelBufferUnlockBaseAddress(pixelBuffer, 0)
+		
+		
+		return texture
+	}
+	
+	
+	func getTextureFromImageWithName(fileName: NSString) -> GLuint {
+		
+		var spriteImage: CGImageRef? = UIImage(named: fileName).CGImage
+		if !spriteImage {
+			println("Failed to load image!")
+			exit(1)
+		}
+		
+		var width: UInt = CGImageGetWidth(spriteImage)
+		var height: UInt = CGImageGetHeight(spriteImage)
+		var spriteData = COpaquePointer(UnsafePointer<GLubyte>(calloc(UInt(CGFloat(width) * CGFloat(height) * 4), sizeof(GLubyte).asUnsigned())))
+	
+		let bitmapInfo = CGBitmapInfo.fromRaw(CGImageAlphaInfo.PremultipliedLast.toRaw())!
+		var spriteContext: CGContextRef = CGBitmapContextCreate(spriteData, width, height, 8, width*4, CGImageGetColorSpace(spriteImage), bitmapInfo)
+		
+		CGContextDrawImage(spriteContext, CGRectMake(0, 0, CGFloat(width) , CGFloat(height)), spriteImage)
+		CGContextRelease(spriteContext)
+		
+		var texName: GLuint = GLuint()
+		glGenTextures(1, &texName)
+		glBindTexture(GL_TEXTURE_2D.asUnsigned(), texName)
+		
+		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_MIN_FILTER.asUnsigned(), GL_NEAREST)
+		glTexImage2D(GL_TEXTURE_2D.asUnsigned(), 0, GL_RGBA, GLsizei(width), GLsizei(height), 0, GL_RGBA.asUnsigned(), UInt32(GL_UNSIGNED_BYTE), spriteData)
+		
+		free(spriteData)
+		return texName
+	}
+	
+	
+	func testGetTextureFromSampleBuffer(sampleBuffer: CMSampleBuffer!) {
+		var unmanagedImageBuffer: Unmanaged<CVImageBuffer> = CMSampleBufferGetImageBuffer(sampleBuffer)
+		var imageBuffer = unmanagedImageBuffer.takeUnretainedValue()
+		var opaqueImageBuffer = unmanagedImageBuffer.toOpaque()
+		
+		var cameraFrame: CVPixelBuffer = Unmanaged<CVPixelBuffer>.fromOpaque(opaqueImageBuffer).takeUnretainedValue()
+		var width: UInt = CVPixelBufferGetWidth(cameraFrame)
+		var height: UInt = CVPixelBufferGetHeight(cameraFrame)
+		
+		CVPixelBufferLockBaseAddress(cameraFrame, 0);
+		
+		var unmanagedTexture: Unmanaged<CVOpenGLESTextureRef>?
+		var err: CVReturn = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, coreVideoTextureCache, imageBuffer, nil, GL_TEXTURE_2D.asUnsigned(),
+				GL_RGBA, GLsizei(width), GLsizei(height), GL_BGRA.asUnsigned(), UInt32(GL_UNSIGNED_BYTE), 0, &unmanagedTexture);
+		var texture: CVOpenGLESTextureRef = unmanagedTexture!.takeUnretainedValue();
+
+		var outputTexture = CVOpenGLESTextureGetName(texture);
+		glBindTexture(GL_TEXTURE_2D.asUnsigned(), outputTexture);
+		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_MIN_FILTER.asUnsigned(), GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_MAG_FILTER.asUnsigned(), GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_WRAP_S.asUnsigned(), GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_WRAP_T.asUnsigned(), GL_CLAMP_TO_EDGE);
+		
+		// Do processing work on the texture data here
+		
+		CVPixelBufferUnlockBaseAddress(cameraFrame, 0);
+		
+		CVOpenGLESTextureCacheFlush(coreVideoTextureCache, 0);
+		CFRelease(texture);
+		outputTexture = 0;
+	}
+	
+	func updateUsingSampleBuffer(sampleBuffer: CMSampleBuffer!) {
+		//suppliedTexture = getTextureFromImageWithName("tile_floor.png")
+		//suppliedTexture = getTextureFromSampleBuffer(sampleBuffer)
+		//testGetTextureFromSampleBuffer(sampleBuffer)
+		//dispatch_async(dispatch_get_main_queue(), {
+		//	self.suppliedTexture = self.getTextureFromImageWithName("tile_floor.png")
+		//})
+		//print(suppliedTexture)
 	}
 }

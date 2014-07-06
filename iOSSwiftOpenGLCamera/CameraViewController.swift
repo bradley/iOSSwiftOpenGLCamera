@@ -13,9 +13,8 @@ import AVFoundation
 class CameraViewController: UIViewController, CameraSessionControllerDelegate {
 	
 	var cameraSessionController: CameraSessionController!
-	var previewLayer: AVCaptureVideoPreviewLayer!
-	
-	
+	@IBOutlet var openGLView: OpenGLView!
+
 	/* Lifecycle
 	------------------------------------------*/
 	
@@ -44,18 +43,10 @@ class CameraViewController: UIViewController, CameraSessionControllerDelegate {
 	------------------------------------------*/
 	
 	func setupPreviewLayer() {
-		var minSize: Float = min(view.bounds.size.width, view.bounds.size.height)
-		var bounds: CGRect = CGRectMake(0.0, 0.0, minSize, minSize)
-		previewLayer = AVCaptureVideoPreviewLayer(session: cameraSessionController.session)
-		previewLayer.bounds = bounds
-		previewLayer.position = CGPointMake(CGRectGetMidX(view.bounds), CGRectGetMidY(view.bounds))
-		previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
-		
-		view.layer.addSublayer(previewLayer)
 	}
 	
 	func cameraSessionDidOutputSampleBuffer(sampleBuffer: CMSampleBuffer!) {
-		// Any frame processing could be done here.
+		openGLView.updateUsingSampleBuffer(sampleBuffer)
 	}
 	
 }

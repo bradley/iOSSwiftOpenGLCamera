@@ -45,6 +45,10 @@ class OpenGLView: UIView {
 	var textureUniform: GLuint = GLuint()
 	var indexBuffer: GLuint = GLuint()
 	var vertexBuffer: GLuint = GLuint()
+	
+	var unmanagedVideoTexture: Unmanaged<CVOpenGLESTexture>?
+	var videoTexture: CVOpenGLESTextureRef?
+	var videoTextureID: GLuint = GLuint()
 	var suppliedTexture: GLuint?
 	
 	var unmanagedCoreVideoTextureCache: Unmanaged<CVOpenGLESTextureCache>?
@@ -314,6 +318,15 @@ class OpenGLView: UIView {
 		return texName
 	}
 	
+	func cleanupTextures() {
+		if (videoTexture) {
+			CFRelease(videoTexture)
+			videoTexture = nil
+			videoTextureID = 0
+		}
+		CVOpenGLESTextureCacheFlush(coreVideoTextureCache, 0);
+	}
+	
 	
 	func testGetTextureFromSampleBuffer(sampleBuffer: CMSampleBuffer!) {
 		var unmanagedImageBuffer: Unmanaged<CVImageBuffer> = CMSampleBufferGetImageBuffer(sampleBuffer)
@@ -324,15 +337,17 @@ class OpenGLView: UIView {
 		var width: UInt = CVPixelBufferGetWidth(cameraFrame)
 		var height: UInt = CVPixelBufferGetHeight(cameraFrame)
 		
-		CVPixelBufferLockBaseAddress(cameraFrame, 0);
 		
-		var unmanagedTexture: Unmanaged<CVOpenGLESTextureRef>?
+		cleanupTextures()
+		
+		CVPixelBufferLockBaseAddress(cameraFrame, 0)
+	
 		var err: CVReturn = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, coreVideoTextureCache, imageBuffer, nil, GL_TEXTURE_2D.asUnsigned(),
-				GL_RGBA, GLsizei(width), GLsizei(height), GL_BGRA.asUnsigned(), UInt32(GL_UNSIGNED_BYTE), 0, &unmanagedTexture);
-		var texture: CVOpenGLESTextureRef = unmanagedTexture!.takeUnretainedValue();
+				GL_RGBA, GLsizei(width), GLsizei(height), GL_BGRA.asUnsigned(), UInt32(GL_UNSIGNED_BYTE), 0, &unmanagedVideoTexture)
+		videoTexture = unmanagedVideoTexture!.takeUnretainedValue()
 
-		var outputTexture = CVOpenGLESTextureGetName(texture);
-		glBindTexture(GL_TEXTURE_2D.asUnsigned(), outputTexture);
+		videoTextureID = CVOpenGLESTextureGetName(videoTexture);
+		glBindTexture(GL_TEXTURE_2D.asUnsigned(), videoTextureID);
 		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_MIN_FILTER.asUnsigned(), GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_MAG_FILTER.asUnsigned(), GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_WRAP_S.asUnsigned(), GL_CLAMP_TO_EDGE);
@@ -340,11 +355,12 @@ class OpenGLView: UIView {
 		
 		// Do processing work on the texture data here
 		
-		CVPixelBufferUnlockBaseAddress(cameraFrame, 0);
+		CVPixelBufferUnlockBaseAddress(cameraFrame, 0)
 		
-		CVOpenGLESTextureCacheFlush(coreVideoTextureCache, 0);
-		CFRelease(texture);
-		outputTexture = 0;
+		CVOpenGLESTextureCacheFlush(coreVideoTextureCache, 0)
+		CFRelease(videoTexture)
+		videoTexture = nil
+		videoTextureID = 0
 	}
 	
 	func updateUsingSampleBuffer(sampleBuffer: CMSampleBuffer!) {

@@ -104,9 +104,10 @@ class CameraSessionController: NSObject, AVCaptureVideoDataOutputSampleBufferDel
 	}
 	
 	func addVideoOutput() {
-		var rgbOutputSettings: NSDictionary = NSDictionary(object: Int(CInt(kCIFormatRGBA8)), forKey: kCVPixelBufferPixelFormatTypeKey)
 		
 		videoDeviceOutput = AVCaptureVideoDataOutput()
+		
+		videoDeviceOutput.videoSettings = NSDictionary(object: Int(kCVPixelFormatType_32BGRA), forKey:kCVPixelBufferPixelFormatTypeKey)
 		
 		videoDeviceOutput.alwaysDiscardsLateVideoFrames = true
 		

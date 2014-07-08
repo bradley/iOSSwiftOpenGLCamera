@@ -289,7 +289,7 @@ class OpenGLView: UIView {
 		var width: UInt = CVPixelBufferGetWidth(cameraFrame)
 		var height: UInt = CVPixelBufferGetHeight(cameraFrame)
 
-		//CVPixelBufferLockBaseAddress(cameraFrame, 0)
+		CVPixelBufferLockBaseAddress(cameraFrame, 0)
 
 		var err: CVReturn = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, coreVideoTextureCache, imageBuffer, nil, GL_TEXTURE_2D.asUnsigned(),
 				GL_RGBA, GLsizei(width), GLsizei(height), GL_BGRA.asUnsigned(), UInt32(GL_UNSIGNED_BYTE), 0, &unmanagedVideoTexture)
@@ -304,9 +304,9 @@ class OpenGLView: UIView {
 		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_WRAP_S.asUnsigned(), GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_WRAP_T.asUnsigned(), GL_CLAMP_TO_EDGE);
 		
+		CVPixelBufferUnlockBaseAddress(cameraFrame, 0)
+		
 		return textureID
-
-		//CVPixelBufferUnlockBaseAddress(cameraFrame, 0)
 	}
 	
 	func updateUsingSampleBuffer(sampleBuffer: CMSampleBuffer!) {

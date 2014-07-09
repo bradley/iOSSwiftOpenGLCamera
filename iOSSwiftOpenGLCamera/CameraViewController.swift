@@ -15,6 +15,7 @@ class CameraViewController: UIViewController, CameraSessionControllerDelegate {
 	var cameraSessionController: CameraSessionController!
 	@IBOutlet var openGLView: OpenGLView!
 
+	
 	/* Lifecycle
 	------------------------------------------*/
 	

@@ -22,10 +22,10 @@ struct Vertex {
 }
 
 var Vertices: (Vertex, Vertex, Vertex, Vertex) = (
-	Vertex(Position: (1, -1, 0) , Color: (1, 0, 0, 1), TexCoord: (1, 0)),
-	Vertex(Position: (1, 1, 0)  , Color: (0, 1, 0, 1), TexCoord: (1, 1)),
-	Vertex(Position: (-1, 1, 0) , Color: (0, 0, 1, 1), TexCoord: (0, 1)),
-	Vertex(Position: (-1, -1, 0), Color: (0, 0, 0, 1), TexCoord: (0, 0))
+	Vertex(Position: (1, -1, 0) , Color: (1, 0, 0, 1), TexCoord: (1, 1)),
+	Vertex(Position: (1, 1, 0)  , Color: (0, 1, 0, 1), TexCoord: (1, 0)),
+	Vertex(Position: (-1, 1, 0) , Color: (0, 0, 1, 1), TexCoord: (0, 0)),
+	Vertex(Position: (-1, -1, 0), Color: (0, 0, 0, 1), TexCoord: (0, 1))
 )
 
 var Indices: (GLubyte, GLubyte, GLubyte, GLubyte, GLubyte, GLubyte) = (
@@ -74,6 +74,8 @@ class OpenGLView: UIView {
 		compileShaders()
 		setupVBOs()
 		setupDisplayLink()
+		
+		self.contentScaleFactor =  UIScreen.mainScreen().scale
 	}
 	
 	
@@ -83,8 +85,9 @@ class OpenGLView: UIView {
 	func setupLayer() {
 		// CALayer's are, by default, non-opaque, which is 'bad for performance with OpenGL',
 		//   so let's set our CAEAGLLayer layer to be opaque.
-		eaglLayer	= layer as CAEAGLLayer
+		eaglLayer = layer as CAEAGLLayer
 		eaglLayer.opaque = true
+
 	}
 	
 	func setupContext() {
@@ -232,6 +235,8 @@ class OpenGLView: UIView {
 			glBindTexture(GL_TEXTURE_2D.asUnsigned(), videoTextureID!);
 			glUniform1i(textureUniform.asSigned(), 0);
 		}
+		
+		
 		
 		let vertextBufferOffset: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))
 		glDrawElements(GL_TRIANGLES.asUnsigned(), Int32(GLfloat(sizeofValue(Indices)) / GLfloat(sizeofValue(Indices.0))), GL_UNSIGNED_BYTE.asUnsigned(), vertextBufferOffset)

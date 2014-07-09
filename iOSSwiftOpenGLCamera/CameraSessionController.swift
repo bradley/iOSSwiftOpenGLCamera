@@ -180,19 +180,20 @@ class CameraSessionController: NSObject, AVCaptureVideoDataOutputSampleBufferDel
 		}
 		
 		dispatch_async(sessionQueue, {
-			
-			self.stillImageOutput.captureStillImageAsynchronouslyFromConnection(self.stillImageOutput.connectionWithMediaType(AVMediaTypeVideo), completionHandler: {
-				(imageDataSampleBuffer: CMSampleBuffer?, error: NSError?) -> Void in
-				if !imageDataSampleBuffer || error {
-					completion!(image:nil, error:nil)
+			self.stillImageOutput.captureStillImageAsynchronouslyFromConnection(
+				self.stillImageOutput.connectionWithMediaType(AVMediaTypeVideo),completionHandler: {
+					(imageDataSampleBuffer: CMSampleBuffer?, error: NSError?) -> Void in
+					if !imageDataSampleBuffer || error {
+						completion!(image:nil, error:nil)
+					}
+					else if imageDataSampleBuffer {
+						var imageData: NSData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataSampleBuffer?)
+						var image: UIImage = UIImage(data: imageData)
+						completion!(image:image, error:nil)
+					}
 				}
-				else if imageDataSampleBuffer {
-					var imageData: NSData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataSampleBuffer?)
-					var image: UIImage = UIImage(data: imageData)
-					completion!(image:image, error:nil)
-				}
-				})
-			})
+			)
+		})
 	}
 	
 	
@@ -200,6 +201,14 @@ class CameraSessionController: NSObject, AVCaptureVideoDataOutputSampleBufferDel
 	------------------------------------------*/
 	
 	func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
+		if (connection.supportsVideoOrientation){
+			//connection.videoOrientation = AVCaptureVideoOrientation.PortraitUpsideDown
+			connection.videoOrientation = AVCaptureVideoOrientation.Portrait
+		}
+		if (connection.supportsVideoMirroring) {
+			//connection.videoMirrored = true
+			connection.videoMirrored = false
+		}
 		sessionDelegate?.cameraSessionDidOutputSampleBuffer?(sampleBuffer)
 	}
 	

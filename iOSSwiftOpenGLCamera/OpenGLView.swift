@@ -17,15 +17,14 @@ import AVFoundation
 
 struct Vertex {
 	var Position: (CFloat, CFloat, CFloat)
-	var Color: (CFloat, CFloat, CFloat, CFloat)
 	var TexCoord: (CFloat, CFloat)
 }
 
 var Vertices: (Vertex, Vertex, Vertex, Vertex) = (
-	Vertex(Position: (1, -1, 0) , Color: (1, 0, 0, 1), TexCoord: (1, 1)),
-	Vertex(Position: (1, 1, 0)  , Color: (0, 1, 0, 1), TexCoord: (1, 0)),
-	Vertex(Position: (-1, 1, 0) , Color: (0, 0, 1, 1), TexCoord: (0, 0)),
-	Vertex(Position: (-1, -1, 0), Color: (0, 0, 0, 1), TexCoord: (0, 1))
+	Vertex(Position: (1, -1, 0) , TexCoord: (1, 1)),
+	Vertex(Position: (1, 1, 0)  , TexCoord: (1, 0)),
+	Vertex(Position: (-1, 1, 0) , TexCoord: (0, 0)),
+	Vertex(Position: (-1, -1, 0), TexCoord: (0, 1))
 )
 
 var Indices: (GLubyte, GLubyte, GLubyte, GLubyte, GLubyte, GLubyte) = (
@@ -40,7 +39,6 @@ class OpenGLView: UIView {
 	var context: EAGLContext!
 	var colorRenderBuffer: GLuint = GLuint()
 	var positionSlot: GLuint = GLuint()
-	var colorSlot: GLuint = GLuint()
 	var texCoordSlot: GLuint = GLuint()
 	var textureUniform: GLuint = GLuint()
 	var indexBuffer: GLuint = GLuint()
@@ -194,12 +192,11 @@ class OpenGLView: UIView {
 		// Finally, call glGetAttribLocation to get a pointer to the input values for the vertex shader, so we
 		//  can set them in code. Also call glEnableVertexAttribArray to enable use of these arrays (they are disabled by default).
 		positionSlot = glGetAttribLocation(programHandle, "Position").asUnsigned()
-		colorSlot = glGetAttribLocation(programHandle, "SourceColor").asUnsigned()
 		glEnableVertexAttribArray(positionSlot)
-		glEnableVertexAttribArray(colorSlot)
 		
 		texCoordSlot = glGetAttribLocation(programHandle, "TexCoordIn").asUnsigned()
 		glEnableVertexAttribArray(texCoordSlot);
+		
 		textureUniform = glGetUniformLocation(programHandle, "Texture").asUnsigned()
 	}
 	
@@ -225,17 +222,14 @@ class OpenGLView: UIView {
 		
 		let positionSlotFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))
 		glVertexAttribPointer(positionSlot, 3 as GLint, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), positionSlotFirstComponent)
-		let colorSlotFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(sizeof(Float) * 3))
-		glVertexAttribPointer(colorSlot, 4 as GLint, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), colorSlotFirstComponent)
 		
-		let texCoordFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(sizeof(Float) * 7))
+		let texCoordFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(sizeof(Float) * 3))
 		glVertexAttribPointer(texCoordSlot, 2, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), texCoordFirstComponent);
 		glActiveTexture(UInt32(GL_TEXTURE0));
 		if videoTextureID {
 			glBindTexture(GL_TEXTURE_2D.asUnsigned(), videoTextureID!);
 			glUniform1i(textureUniform.asSigned(), 0);
 		}
-		
 		
 		
 		let vertextBufferOffset: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))

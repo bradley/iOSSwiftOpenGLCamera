@@ -27,7 +27,7 @@ class CameraViewController: UIViewController, CameraSessionControllerDelegate {
 		setupPreviewLayer()
 	}
 	
-	override func viewWillAppear(animated: Bool) {3
+	override func viewWillAppear(animated: Bool) {
 		super.viewWillAppear(animated)
 		
 		cameraSessionController.startCamera()

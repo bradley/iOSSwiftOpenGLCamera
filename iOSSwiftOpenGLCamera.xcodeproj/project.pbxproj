@@ -17,7 +17,6 @@
 		AD7E24891963A1B400A92F75 /* SimpleFragment.glsl in Resources */ = {isa = PBXBuildFile; fileRef = AD7E24881963A1B400A92F75 /* SimpleFragment.glsl */; };
 		AD7E24EB1963BE4300A92F75 /* CameraSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD7E24EA1963BE4300A92F75 /* CameraSessionController.swift */; };
 		AD7E24ED1966373300A92F75 /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD7E24EC1966373300A92F75 /* CameraViewController.swift */; };
-		ADA58F4B1969489200AABC7C /* tile_floor.png in Resources */ = {isa = PBXBuildFile; fileRef = ADA58F4A1969489200AABC7C /* tile_floor.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,7 +44,6 @@
 		AD7E24881963A1B400A92F75 /* SimpleFragment.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SimpleFragment.glsl; sourceTree = "<group>"; };
 		AD7E24EA1963BE4300A92F75 /* CameraSessionController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraSessionController.swift; sourceTree = "<group>"; };
 		AD7E24EC1966373300A92F75 /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
-		ADA58F4A1969489200AABC7C /* tile_floor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tile_floor.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,7 +97,6 @@
 		AD7E24621963A14A00A92F75 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				ADA58F4A1969489200AABC7C /* tile_floor.png */,
 				AD7E246B1963A14A00A92F75 /* Main.storyboard */,
 				AD7E24861963A1A600A92F75 /* SimpleVertex.glsl */,
 				AD7E24881963A1B400A92F75 /* SimpleFragment.glsl */,
@@ -208,7 +205,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AD7E246D1963A14A00A92F75 /* Main.storyboard in Resources */,
-				ADA58F4B1969489200AABC7C /* tile_floor.png in Resources */,
 				AD7E24891963A1B400A92F75 /* SimpleFragment.glsl in Resources */,
 				AD7E246F1963A14A00A92F75 /* Images.xcassets in Resources */,
 				AD7E24871963A1A600A92F75 /* SimpleVertex.glsl in Resources */,

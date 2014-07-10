@@ -49,6 +49,9 @@ class OpenGLView: UIView {
 	var unmanagedCoreVideoTextureCache: Unmanaged<CVOpenGLESTextureCache>?
 	var coreVideoTextureCache: CVOpenGLESTextureCacheRef?
 	
+	var textureWidth: UInt?
+	var textureHeight: UInt?
+	
 	/* Class Methods
 	------------------------------------------*/
 	
@@ -75,7 +78,7 @@ class OpenGLView: UIView {
 		
 		self.contentScaleFactor =  UIScreen.mainScreen().scale
 	}
-	
+
 	
 	/* Instance Methods
 	------------------------------------------*/
@@ -92,7 +95,7 @@ class OpenGLView: UIView {
 		// Just like with CoreGraphics, in order to do much with OpenGL, we need a context.
 		//   Here we create a new context with the version of the rendering API we want and
 		//   tells OpenGL that when we draw, we want to do so within this context.
-		var api: EAGLRenderingAPI = EAGLRenderingAPI.OpenGLES2
+		let api: EAGLRenderingAPI = EAGLRenderingAPI.OpenGLES2
 		context = EAGLContext(API: api)
 		
 		if (!self.context) {
@@ -105,7 +108,7 @@ class OpenGLView: UIView {
 			exit(1)
 		}
 
-		var err: CVReturn = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, nil, context, nil, &unmanagedCoreVideoTextureCache)
+		let err: CVReturn = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, nil, context, nil, &unmanagedCoreVideoTextureCache)
 		coreVideoTextureCache = unmanagedCoreVideoTextureCache!.takeUnretainedValue()
 	}
 
@@ -135,7 +138,7 @@ class OpenGLView: UIView {
 	func compileShader(shaderName: NSString, shaderType: GLenum) -> GLuint {
 		
 		// Get NSString with contents of our shader file.
-		var shaderPath: NSString = NSBundle.mainBundle().pathForResource(shaderName, ofType: "glsl")
+		let shaderPath: NSString = NSBundle.mainBundle().pathForResource(shaderName, ofType: "glsl")
 		var error: NSErrorPointer!
 		var shaderString: NSString? = NSString.stringWithContentsOfFile(shaderPath, encoding:NSUTF8StringEncoding, error: error)
 		if (!shaderString) {
@@ -143,7 +146,7 @@ class OpenGLView: UIView {
 		}
 		
 		// Tell OpenGL to create an OpenGL object to represent the shader, indicating if it's a vertex or a fragment shader.
-		var shaderHandle: GLuint = glCreateShader(shaderType)
+		let shaderHandle: GLuint = glCreateShader(shaderType)
 		
 		// Conver shader string to CString and call glShaderSource to give OpenGL the source for the shader.
 		var shaderStringUTF8: CString = shaderString!.UTF8String
@@ -168,8 +171,8 @@ class OpenGLView: UIView {
 	func compileShaders() {
 		
 		// Compile our vertex and fragment shaders.
-		var vertexShader: GLuint = compileShader("SimpleVertex", shaderType: GL_VERTEX_SHADER.asUnsigned())
-		var fragmentShader: GLuint = compileShader("SimpleFragment", shaderType: GL_FRAGMENT_SHADER.asUnsigned())
+		let vertexShader: GLuint = compileShader("SimpleVertex", shaderType: GL_VERTEX_SHADER.asUnsigned())
+		let fragmentShader: GLuint = compileShader("SimpleFragment", shaderType: GL_FRAGMENT_SHADER.asUnsigned())
 		
 		// Call glCreateProgram, glAttachShader, and glLinkProgram to link the vertex and fragment shaders into a complete program.
 		var programHandle: GLuint = glCreateProgram()
@@ -212,13 +215,20 @@ class OpenGLView: UIView {
 	}
 	
 	func setupDisplayLink() {
-		var displayLink: CADisplayLink = CADisplayLink(target: self, selector: "render:")
+		let displayLink: CADisplayLink = CADisplayLink(target: self, selector: "render:")
 		displayLink.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
 	}
 	
 	func render(displayLink: CADisplayLink) {
 		
-		glViewport(0, 0, GLint(frame.size.width), GLint(frame.size.height));
+		if textureWidth && textureHeight {
+			var ratio = CGFloat(frame.size.width) / CGFloat(textureWidth!)
+			glViewport(0, 0, GLint(CGFloat(textureWidth!) * ratio), GLint(CGFloat(textureHeight!) * ratio))
+		}
+		else {
+			glViewport(0, 0, GLint(frame.size.width), GLint(frame.size.height))
+		}
+		
 		
 		let positionSlotFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))
 		glVertexAttribPointer(positionSlot, 3 as GLint, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), positionSlotFirstComponent)
@@ -247,12 +257,12 @@ class OpenGLView: UIView {
 			exit(1)
 		}
 		
-		var width: UInt = CGImageGetWidth(spriteImage)
-		var height: UInt = CGImageGetHeight(spriteImage)
-		var spriteData = COpaquePointer(UnsafePointer<GLubyte>(calloc(UInt(CGFloat(width) * CGFloat(height) * 4), sizeof(GLubyte).asUnsigned())))
+		let width: UInt = CGImageGetWidth(spriteImage)
+		let height: UInt = CGImageGetHeight(spriteImage)
+		let spriteData = COpaquePointer(UnsafePointer<GLubyte>(calloc(UInt(CGFloat(width) * CGFloat(height) * 4), sizeof(GLubyte).asUnsigned())))
 	
 		let bitmapInfo = CGBitmapInfo.fromRaw(CGImageAlphaInfo.PremultipliedLast.toRaw())!
-		var spriteContext: CGContextRef = CGBitmapContextCreate(spriteData, width, height, 8, width*4, CGImageGetColorSpace(spriteImage), bitmapInfo)
+		let spriteContext: CGContextRef = CGBitmapContextCreate(spriteData, width, height, 8, width*4, CGImageGetColorSpace(spriteImage), bitmapInfo)
 		
 		CGContextDrawImage(spriteContext, CGRectMake(0, 0, CGFloat(width) , CGFloat(height)), spriteImage)
 		CGContextRelease(spriteContext)
@@ -276,7 +286,6 @@ class OpenGLView: UIView {
 		CVOpenGLESTextureCacheFlush(coreVideoTextureCache, 0)
 	}
 	
-	
 	func getTextureFromSampleBuffer(sampleBuffer: CMSampleBuffer!) -> GLuint {
 		cleanupTextures()
 		
@@ -285,13 +294,13 @@ class OpenGLView: UIView {
 		var opaqueImageBuffer = unmanagedImageBuffer.toOpaque()
 		
 		var cameraFrame: CVPixelBuffer = Unmanaged<CVPixelBuffer>.fromOpaque(opaqueImageBuffer).takeUnretainedValue()
-		var width: UInt = CVPixelBufferGetWidth(cameraFrame)
-		var height: UInt = CVPixelBufferGetHeight(cameraFrame)
+		textureWidth = CVPixelBufferGetWidth(cameraFrame)
+		textureHeight = CVPixelBufferGetHeight(cameraFrame)
 
 		CVPixelBufferLockBaseAddress(cameraFrame, 0)
 
 		var err: CVReturn = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, coreVideoTextureCache, imageBuffer, nil, GL_TEXTURE_2D.asUnsigned(),
-				GL_RGBA, GLsizei(width), GLsizei(height), GL_BGRA.asUnsigned(), UInt32(GL_UNSIGNED_BYTE), 0, &unmanagedVideoTexture)
+				GL_RGBA, GLsizei(textureWidth!), GLsizei(textureHeight!), GL_BGRA.asUnsigned(), UInt32(GL_UNSIGNED_BYTE), 0, &unmanagedVideoTexture)
 		videoTexture = unmanagedVideoTexture!.takeUnretainedValue()
 		
 		var textureID: GLuint = GLuint()
@@ -303,7 +312,9 @@ class OpenGLView: UIView {
 		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_WRAP_S.asUnsigned(), GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D.asUnsigned(), GL_TEXTURE_WRAP_T.asUnsigned(), GL_CLAMP_TO_EDGE);
 		
+		
 		CVPixelBufferUnlockBaseAddress(cameraFrame, 0)
+		
 		
 		return textureID
 	}

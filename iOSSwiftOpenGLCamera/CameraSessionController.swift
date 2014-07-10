@@ -54,6 +54,8 @@ class CameraSessionController: NSObject, AVCaptureVideoDataOutputSampleBufferDel
 		
 		session = AVCaptureSession()
 		
+		//session.sessionPreset = AVCaptureSessionPresetMedium
+		
 		authorizeCamera();
 		
 		sessionQueue = dispatch_queue_create("CameraSessionController Session", DISPATCH_QUEUE_SERIAL)

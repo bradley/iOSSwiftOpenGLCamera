@@ -12,19 +12,31 @@
                         <viewControllerLayoutGuide type="top" id="jyV-Pf-zRb"/>
                         <viewControllerLayoutGuide type="bottom" id="2fi-mo-0CV"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="kh9-bI-dsS" customClass="OpenGLView" customModule="iOSSwiftOpenGLCamera" customModuleProvider="target">
+                    <view key="view" contentMode="scaleToFill" id="kh9-bI-dsS">
                         <rect key="frame" x="0.0" y="0.0" width="480" height="480"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vBx-k3-IxS" customClass="OpenGLView" customModule="iOSSwiftOpenGLCamera" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="0.0" width="480" height="480"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
+                        </subviews>
                         <color key="backgroundColor" red="0.67019289975907015" green="1" blue="0.79593725634484269" alpha="1" colorSpace="calibratedRGB"/>
+                        <constraints>
+                            <constraint firstItem="vBx-k3-IxS" firstAttribute="top" secondItem="kh9-bI-dsS" secondAttribute="top" id="4Jw-E5-5ev"/>
+                            <constraint firstAttribute="bottom" secondItem="vBx-k3-IxS" secondAttribute="bottom" id="OCg-cB-Lur"/>
+                            <constraint firstItem="vBx-k3-IxS" firstAttribute="leading" secondItem="kh9-bI-dsS" secondAttribute="leading" id="bab-0N-qyY"/>
+                            <constraint firstAttribute="trailing" secondItem="vBx-k3-IxS" secondAttribute="trailing" id="pNz-Mx-jwr"/>
+                        </constraints>
                         <simulatedOrientationMetrics key="simulatedOrientationMetrics" orientation="landscapeRight"/>
                     </view>
                     <connections>
-                        <outlet property="openGLView" destination="kh9-bI-dsS" id="lec-h9-hiT"/>
+                        <outlet property="openGLView" destination="vBx-k3-IxS" id="asZ-n3-Eiv"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="24" y="366"/>
+            <point key="canvasLocation" x="414" y="96"/>
         </scene>
     </scenes>
 </document>

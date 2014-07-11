@@ -160,8 +160,16 @@ class OpenGLView: UIView {
 		var compileSuccess: GLint = GLint()
 		glGetShaderiv(shaderHandle, GL_COMPILE_STATUS.asUnsigned(), &compileSuccess)
 		if (compileSuccess == GL_FALSE) {
+			var value: GLint = 0
+			glGetShaderiv(shaderHandle, GLenum(GL_INFO_LOG_LENGTH), &value)
+			var infoLog: GLchar[] = GLchar[](count: Int(value), repeatedValue: 0)
+			var infoLogLength: GLsizei = 0
+			glGetShaderInfoLog(shaderHandle, value, &infoLogLength, &infoLog)
+			var messageString = NSString(bytes: infoLog, length: Int(infoLogLength), encoding: NSASCIIStringEncoding)
+			
 			println("Failed to compile shader!")
-			// TODO: Actually output the error that we can get from the glGetShaderInfoLog function.
+			println(messageString)
+			
 			exit(1);
 		}
 		

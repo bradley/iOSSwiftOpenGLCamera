@@ -18,7 +18,28 @@
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vBx-k3-IxS" customClass="OpenGLView" customModule="iOSSwiftOpenGLCamera" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="0.0" width="480" height="480"/>
+                                <subviews>
+                                    <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="bu7-WF-Rir">
+                                        <rect key="frame" x="0.0" y="436" width="480" height="44"/>
+                                        <items>
+                                            <barButtonItem style="plain" systemItem="flexibleSpace" id="cOG-MR-QXN"/>
+                                            <barButtonItem style="plain" id="wIi-U9-NXN">
+                                                <switch key="customView" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="KLg-fa-CFo">
+                                                    <rect key="frame" x="-25" y="-15" width="51" height="31"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                </switch>
+                                            </barButtonItem>
+                                            <barButtonItem style="plain" systemItem="flexibleSpace" id="3C6-io-YWZ"/>
+                                        </items>
+                                        <color key="barTintColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                    </toolbar>
+                                </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstItem="bu7-WF-Rir" firstAttribute="leading" secondItem="vBx-k3-IxS" secondAttribute="leading" id="ZAH-i6-orp"/>
+                                    <constraint firstAttribute="trailing" secondItem="bu7-WF-Rir" secondAttribute="trailing" id="dpB-km-qsz"/>
+                                    <constraint firstAttribute="bottom" secondItem="bu7-WF-Rir" secondAttribute="bottom" id="gT4-oh-pJq"/>
+                                </constraints>
                             </view>
                         </subviews>
                         <color key="backgroundColor" red="0.67019289975907015" green="1" blue="0.79593725634484269" alpha="1" colorSpace="calibratedRGB"/>

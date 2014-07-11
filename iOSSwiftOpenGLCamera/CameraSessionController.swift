@@ -54,7 +54,7 @@ class CameraSessionController: NSObject, AVCaptureVideoDataOutputSampleBufferDel
 		
 		session = AVCaptureSession()
 		
-		//session.sessionPreset = AVCaptureSessionPresetMedium
+		session.sessionPreset = AVCaptureSessionPresetMedium;
 		
 		authorizeCamera();
 		

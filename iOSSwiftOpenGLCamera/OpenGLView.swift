@@ -80,7 +80,7 @@ class OpenGLView: UIView {
 	}
 
 	
-	/* Instance Methods
+	/* Setup Methods
 	------------------------------------------*/
 	
 	func setupLayer() {
@@ -219,34 +219,9 @@ class OpenGLView: UIView {
 		displayLink.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSDefaultRunLoopMode)
 	}
 	
-	func render(displayLink: CADisplayLink) {
-		
-		if textureWidth && textureHeight {
-			var ratio = CGFloat(frame.size.width) / CGFloat(textureWidth!)
-			glViewport(0, 0, GLint(CGFloat(textureWidth!) * ratio), GLint(CGFloat(textureHeight!) * ratio))
-		}
-		else {
-			glViewport(0, 0, GLint(frame.size.width), GLint(frame.size.height))
-		}
-		
-		
-		let positionSlotFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))
-		glVertexAttribPointer(positionSlot, 3 as GLint, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), positionSlotFirstComponent)
-		
-		let texCoordFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(sizeof(Float) * 3))
-		glVertexAttribPointer(texCoordSlot, 2, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), texCoordFirstComponent);
-		glActiveTexture(UInt32(GL_TEXTURE0));
-		if videoTextureID {
-			glBindTexture(GL_TEXTURE_2D.asUnsigned(), videoTextureID!);
-			glUniform1i(textureUniform.asSigned(), 0);
-		}
-		
-		
-		let vertextBufferOffset: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))
-		glDrawElements(GL_TRIANGLES.asUnsigned(), Int32(GLfloat(sizeofValue(Indices)) / GLfloat(sizeofValue(Indices.0))), GL_UNSIGNED_BYTE.asUnsigned(), vertextBufferOffset)
-		
-		context.presentRenderbuffer(Int(GL_RENDERBUFFER))
-	}
+	
+	/* Helper Methods
+	------------------------------------------*/
 	
 	func getTextureFromImageWithName(fileName: NSString) -> GLuint {
 		
@@ -278,7 +253,7 @@ class OpenGLView: UIView {
 		return texName
 	}
 	
-	func cleanupTextures() {
+	func cleanupVideoTextures() {
 		if (videoTexture) {
 			CFRelease(videoTexture)
 			videoTexture = nil
@@ -287,7 +262,7 @@ class OpenGLView: UIView {
 	}
 	
 	func getTextureFromSampleBuffer(sampleBuffer: CMSampleBuffer!) -> GLuint {
-		cleanupTextures()
+		cleanupVideoTextures()
 		
 		var unmanagedImageBuffer: Unmanaged<CVImageBuffer> = CMSampleBufferGetImageBuffer(sampleBuffer)
 		var imageBuffer = unmanagedImageBuffer.takeUnretainedValue()
@@ -299,8 +274,20 @@ class OpenGLView: UIView {
 
 		CVPixelBufferLockBaseAddress(cameraFrame, 0)
 
-		var err: CVReturn = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, coreVideoTextureCache, imageBuffer, nil, GL_TEXTURE_2D.asUnsigned(),
-				GL_RGBA, GLsizei(textureWidth!), GLsizei(textureHeight!), GL_BGRA.asUnsigned(), UInt32(GL_UNSIGNED_BYTE), 0, &unmanagedVideoTexture)
+		var err: CVReturn = CVOpenGLESTextureCacheCreateTextureFromImage(
+										kCFAllocatorDefault,
+										coreVideoTextureCache,
+										imageBuffer,
+										nil,
+										GL_TEXTURE_2D.asUnsigned(),
+										GL_RGBA,
+										GLsizei(textureWidth!),
+										GLsizei(textureHeight!),
+										GL_BGRA.asUnsigned(),
+										UInt32(GL_UNSIGNED_BYTE),
+										0,
+										&unmanagedVideoTexture
+									)
 		videoTexture = unmanagedVideoTexture!.takeUnretainedValue()
 		
 		var textureID: GLuint = GLuint()
@@ -323,5 +310,33 @@ class OpenGLView: UIView {
 		dispatch_async(dispatch_get_main_queue(), {
 			self.videoTextureID = self.getTextureFromSampleBuffer(sampleBuffer)
 		});
+	}
+	
+	func render(displayLink: CADisplayLink) {
+		if textureWidth && textureHeight {
+			var ratio = CGFloat(frame.size.height) / CGFloat(textureHeight!)
+			glViewport(0, 0, GLint(CGFloat(textureWidth!) * ratio), GLint(CGFloat(textureHeight!) * ratio))
+		}
+		else {
+			glViewport(0, 0, GLint(frame.size.width), GLint(frame.size.height))
+		}
+		
+		
+		let positionSlotFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))
+		glVertexAttribPointer(positionSlot, 3 as GLint, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), positionSlotFirstComponent)
+		
+		let texCoordFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(sizeof(Float) * 3))
+		glVertexAttribPointer(texCoordSlot, 2, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), texCoordFirstComponent);
+		glActiveTexture(UInt32(GL_TEXTURE0));
+		if videoTextureID {
+			glBindTexture(GL_TEXTURE_2D.asUnsigned(), videoTextureID!);
+			glUniform1i(textureUniform.asSigned(), 0);
+		}
+		
+		
+		let vertextBufferOffset: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))
+		glDrawElements(GL_TRIANGLES.asUnsigned(), Int32(GLfloat(sizeofValue(Indices)) / GLfloat(sizeofValue(Indices.0))), GL_UNSIGNED_BYTE.asUnsigned(), vertextBufferOffset)
+		
+		context.presentRenderbuffer(Int(GL_RENDERBUFFER))
 	}
 }

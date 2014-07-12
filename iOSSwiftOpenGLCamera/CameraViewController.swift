@@ -14,7 +14,8 @@ class CameraViewController: UIViewController, CameraSessionControllerDelegate {
 	
 	var cameraSessionController: CameraSessionController!
 	@IBOutlet var openGLView: OpenGLView!
-
+	@IBOutlet var togglerSwitch: UISwitch
+	
 	
 	/* Lifecycle
 	------------------------------------------*/
@@ -24,7 +25,6 @@ class CameraViewController: UIViewController, CameraSessionControllerDelegate {
 		
 		cameraSessionController = CameraSessionController()
 		cameraSessionController.sessionDelegate = self
-		setupPreviewLayer()
 	}
 	
 	override func viewWillAppear(animated: Bool) {
@@ -43,7 +43,8 @@ class CameraViewController: UIViewController, CameraSessionControllerDelegate {
 	/* Instance Methods
 	------------------------------------------*/
 	
-	func setupPreviewLayer() {
+	@IBAction func toggleShader(sender: AnyObject) {
+		openGLView.shouldShowShader(togglerSwitch.on)
 	}
 	
 	func cameraSessionDidOutputSampleBuffer(sampleBuffer: CMSampleBuffer!) {

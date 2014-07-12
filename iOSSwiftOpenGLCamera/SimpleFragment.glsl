@@ -1,17 +1,19 @@
-//varying lowp vec4 DestinationColor;
 precision mediump float;
 
-
-varying lowp vec2 CameraTextureCoord;
 uniform sampler2D Texture;
+uniform float time;
+uniform float showShader;
+varying vec2 CameraTextureCoord;
 
-void main(void) {
-	//vec4 camera = texture2D(Texture, CameraTextureCoord);
-	//float textel = texture2D(Texture, CameraTextureCoord).r;
-	//gl_FragColor = camera;//texture2D(Texture, CameraTextureCoord);
-	
-	vec2 p = CameraTextureCoord;
-	vec4 color = texture2D(Texture, p);
-	color.rgb = 1.0 - color.rgb;
-	gl_FragColor = color;
+void main() {
+	if (showShader > 0.5) {
+		vec2 offset = 0.5 * vec2( cos(0.0), sin(0.0));
+		vec4 cr = texture2D(Texture, CameraTextureCoord + offset);
+		vec4 cga = texture2D(Texture, CameraTextureCoord);
+		vec4 cb = texture2D(Texture, CameraTextureCoord - offset);
+		gl_FragColor = vec4(cr.r, cga.g, cb.b, cga.a);
+	}
+	else {
+		gl_FragColor = texture2D(Texture, CameraTextureCoord);
+	}
 }

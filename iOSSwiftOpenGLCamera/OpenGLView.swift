@@ -41,6 +41,8 @@ class OpenGLView: UIView {
 	var positionSlot: GLuint = GLuint()
 	var texCoordSlot: GLuint = GLuint()
 	var textureUniform: GLuint = GLuint()
+	var timeUniform: GLuint = GLuint()
+	var showShaderBoolUniform: GLuint = GLuint()
 	var indexBuffer: GLuint = GLuint()
 	var vertexBuffer: GLuint = GLuint()
 	var unmanagedVideoTexture: Unmanaged<CVOpenGLESTexture>?
@@ -51,6 +53,11 @@ class OpenGLView: UIView {
 	
 	var textureWidth: UInt?
 	var textureHeight: UInt?
+	
+	var time: GLfloat = 0.0
+	var showShader: GLfloat = 1.0
+	
+	var frameTimestamp: Double = 0.0
 	
 	/* Class Methods
 	------------------------------------------*/
@@ -209,6 +216,10 @@ class OpenGLView: UIView {
 		glEnableVertexAttribArray(texCoordSlot);
 		
 		textureUniform = glGetUniformLocation(programHandle, "Texture").asUnsigned()
+		
+		timeUniform = glGetUniformLocation(programHandle, "time").asUnsigned()
+		
+		showShaderBoolUniform = glGetUniformLocation(programHandle, "showShader").asUnsigned()
 	}
 	
 	// Setup Vertex Buffer Objects
@@ -320,6 +331,10 @@ class OpenGLView: UIView {
 		});
 	}
 	
+	func shouldShowShader(show: Bool) {
+		showShader = show ? 1.0 : 0.0
+	}
+	
 	func render(displayLink: CADisplayLink) {
 		if textureWidth && textureHeight {
 			var ratio = CGFloat(frame.size.height) / CGFloat(textureHeight!)
@@ -329,18 +344,22 @@ class OpenGLView: UIView {
 			glViewport(0, 0, GLint(frame.size.width), GLint(frame.size.height))
 		}
 		
-		
 		let positionSlotFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))
 		glVertexAttribPointer(positionSlot, 3 as GLint, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), positionSlotFirstComponent)
 		
 		let texCoordFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(sizeof(Float) * 3))
-		glVertexAttribPointer(texCoordSlot, 2, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), texCoordFirstComponent);
-		glActiveTexture(UInt32(GL_TEXTURE0));
+		glVertexAttribPointer(texCoordSlot, 2, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), texCoordFirstComponent)
+		glActiveTexture(UInt32(GL_TEXTURE0))
 		if videoTextureID {
-			glBindTexture(GL_TEXTURE_2D.asUnsigned(), videoTextureID!);
-			glUniform1i(textureUniform.asSigned(), 0);
+			glBindTexture(GL_TEXTURE_2D.asUnsigned(), videoTextureID!)
+			glUniform1i(textureUniform.asSigned(), 0)
 		}
 		
+		// Incriment and pass time to shader. This is experimental, be sure to fully test any use of this variable.
+		time += Float(displayLink.duration)
+		glUniform1f(timeUniform.asSigned(), time)
+		
+		glUniform1f(showShaderBoolUniform.asSigned(), showShader)
 		
 		let vertextBufferOffset: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))
 		glDrawElements(GL_TRIANGLES.asUnsigned(), Int32(GLfloat(sizeofValue(Indices)) / GLfloat(sizeofValue(Indices.0))), GL_UNSIGNED_BYTE.asUnsigned(), vertextBufferOffset)

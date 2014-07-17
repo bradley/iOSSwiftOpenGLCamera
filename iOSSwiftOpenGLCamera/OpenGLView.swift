@@ -146,8 +146,8 @@ class OpenGLView: UIView {
 		
 		// Get NSString with contents of our shader file.
 		let shaderPath: NSString = NSBundle.mainBundle().pathForResource(shaderName, ofType: "glsl")
-		var error: NSErrorPointer!
-		var shaderString: NSString? = NSString.stringWithContentsOfFile(shaderPath, encoding:NSUTF8StringEncoding, error: error)
+
+		var shaderString: NSString? = NSString.stringWithContentsOfFile(shaderPath, encoding:NSUTF8StringEncoding, error: nil)
 		if (!shaderString) {
 			println("Failed to set contents shader of shader file!")
 		}
@@ -169,7 +169,7 @@ class OpenGLView: UIView {
 		if (compileSuccess == GL_FALSE) {
 			var value: GLint = 0
 			glGetShaderiv(shaderHandle, GLenum(GL_INFO_LOG_LENGTH), &value)
-			var infoLog: GLchar[] = GLchar[](count: Int(value), repeatedValue: 0)
+			var infoLog: [GLchar] = [GLchar](count: Int(value), repeatedValue: 0)
 			var infoLogLength: GLsizei = 0
 			glGetShaderInfoLog(shaderHandle, value, &infoLogLength, &infoLog)
 			var messageString = NSString(bytes: infoLog, length: Int(infoLogLength), encoding: NSASCIIStringEncoding)
@@ -253,7 +253,7 @@ class OpenGLView: UIView {
 		
 		let width: UInt = CGImageGetWidth(spriteImage)
 		let height: UInt = CGImageGetHeight(spriteImage)
-		let spriteData = COpaquePointer(UnsafePointer<GLubyte>(calloc(UInt(CGFloat(width) * CGFloat(height) * 4), sizeof(GLubyte).asUnsigned())))
+		let spriteData = UnsafePointer<GLubyte>(calloc(UInt(CGFloat(width) * CGFloat(height) * 4), sizeof(GLubyte).asUnsigned()))
 	
 		let bitmapInfo = CGBitmapInfo.fromRaw(CGImageAlphaInfo.PremultipliedLast.toRaw())!
 		let spriteContext: CGContextRef = CGBitmapContextCreate(spriteData, width, height, 8, width*4, CGImageGetColorSpace(spriteImage), bitmapInfo)
@@ -307,6 +307,7 @@ class OpenGLView: UIView {
 										0,
 										&unmanagedVideoTexture
 									)
+		
 		videoTexture = unmanagedVideoTexture!.takeUnretainedValue()
 		
 		var textureID: GLuint = GLuint()
@@ -336,6 +337,7 @@ class OpenGLView: UIView {
 	}
 	
 	func render(displayLink: CADisplayLink) {
+		
 		if textureWidth && textureHeight {
 			var ratio = CGFloat(frame.size.height) / CGFloat(textureHeight!)
 			glViewport(0, 0, GLint(CGFloat(textureWidth!) * ratio), GLint(CGFloat(textureHeight!) * ratio))
@@ -344,10 +346,10 @@ class OpenGLView: UIView {
 			glViewport(0, 0, GLint(frame.size.width), GLint(frame.size.height))
 		}
 		
-		let positionSlotFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))
+		let positionSlotFirstComponent = ConstUnsafePointer<Int>(0)
 		glVertexAttribPointer(positionSlot, 3 as GLint, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), positionSlotFirstComponent)
 		
-		let texCoordFirstComponent: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(sizeof(Float) * 3))
+		let texCoordFirstComponent = ConstUnsafePointer<Int>(sizeof(Float) * 3)
 		glVertexAttribPointer(texCoordSlot, 2, GL_FLOAT.asUnsigned(), GLboolean.convertFromIntegerLiteral(UInt8(GL_FALSE)), Int32(sizeof(Vertex)), texCoordFirstComponent)
 		glActiveTexture(UInt32(GL_TEXTURE0))
 		if videoTextureID {
@@ -360,8 +362,8 @@ class OpenGLView: UIView {
 		glUniform1f(timeUniform.asSigned(), time)
 		
 		glUniform1f(showShaderBoolUniform.asSigned(), showShader)
-		
-		let vertextBufferOffset: CConstVoidPointer = COpaquePointer(UnsafePointer<Int>(0))
+
+		let vertextBufferOffset = ConstUnsafePointer<Int>(0)
 		glDrawElements(GL_TRIANGLES.asUnsigned(), Int32(GLfloat(sizeofValue(Indices)) / GLfloat(sizeofValue(Indices.0))), GL_UNSIGNED_BYTE.asUnsigned(), vertextBufferOffset)
 		
 		context.presentRenderbuffer(Int(GL_RENDERBUFFER))
